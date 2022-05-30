@@ -9,8 +9,11 @@ $ pip install ftfy regex tqdm h5py scipy opencv-python
 ````
 # Data
 The three datasets are kindly provided by some researchers.
+
 FLICKR-25K: https://pan.baidu.com/s/1X5BTyux524aUyqHpFGPPlA password: eico
+
 NUS-WIDE: https://drive.google.com/drive/folders/0B7IzDz-4yH_HOXdoaDU4dk40RFE?usp=sharing
+
 CIFAR10: https://drive.google.com/open?id=0Bzg9TvY-s7y2Zy1CQklaTTJQdUU
 
 # Training
