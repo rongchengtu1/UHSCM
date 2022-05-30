@@ -72,10 +72,28 @@ def main(opt):
     image_feature = Generatefeature(model, train_loader, num_train, 512)
 
     tokenizer = ClipTokenizer()
+    max_words = 77
     f = open(opt.concept_path, 'r')
+    SPECIAL_TOKEN = {"CLS_TOKEN": "<|startoftext|>", "SEP_TOKEN": "<|endoftext|>",
+                          "MASK_TOKEN": "[MASK]", "UNK_TOKEN": "[UNK]", "PAD_TOKEN": "[PAD]"}
     concept_prompt = ['a photo of the ' + x.strip() for x in f.readlines()]
+    text_inputs = np.zeros((len(concept_prompt), max_words), dtype=np.long)
     f.close()
-    text_inputs = tokenizer.encoder(concept_prompt).cuda()
+    for i in range(len(concept_prompt)):
+        text = concept_prompt[i]
+        words = tokenizer.tokenize(text)
+        words = [self.SPECIAL_TOKEN["CLS_TOKEN"]] + words
+        total_length_with_CLS = max_words - 1
+        if len(words) > total_length_with_CLS:
+            words = words[:total_length_with_CLS]
+        words = words + [SPECIAL_TOKEN["SEP_TOKEN"]]
+        input_ids = tokenizer.convert_tokens_to_ids(words)
+        while len(input_ids) < max_words:
+            input_ids.append(0)
+
+        text_inputs[i] = np.array(input_ids)
+
+    text_inputs = torch.tensor(text_inputs).cuda()
     with torch.no_grad():
         text_features = model.encode_text(text_inputs).cpu()
 
