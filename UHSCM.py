@@ -54,9 +54,9 @@ def UHSCM_algo(opt):
     code_length = opt.bit
     bit = opt.bit
 
-    lamda = opt.lamda
-    temp = opt.temp
-    sc_f = opt.scf
+    beta = opt.beta
+    gamma = opt.gamma
+    _lambda = opt._lambda
     alpha = opt.alpha
     ablation_type = opt.ablation_type
     batch_size = 128
@@ -173,9 +173,9 @@ def UHSCM_algo(opt):
             Bbatch = torch.sign(train_outputs1)
             regterm = (Bbatch - train_outputs1).pow(2).sum() / len(train_label)
             train_outputs = F.normalize(train_outputs1)
-            SC = (S >= sc_f).float().cuda()
+            SC = (S >= _lambda).float().cuda()
 
-            theta_exp = torch.exp(train_outputs.mm(train_outputs.t()) / temp)
+            theta_exp = torch.exp(train_outputs.mm(train_outputs.t()) / gamma)
             the_frac = ((1 - SC) * theta_exp).sum(1).view(-1, 1) + 0.00001
             loss_c = - (torch.log(theta_exp / the_frac) * SC).sum() / SC.sum()
             # print(loss_c.data.cpu())
@@ -184,7 +184,7 @@ def UHSCM_algo(opt):
             logloss = (theta_x - S.cuda()).pow(2).sum() / (len(train_label) * len(train_label))
 
 
-            loss = logloss + lamda * regterm + alpha * loss_c
+            loss = logloss + beta * regterm + alpha * loss_c
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
@@ -220,10 +220,10 @@ def UHSCM_algo(opt):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--bit", type=int)
-    parser.add_argument("--temp", type=float)
-    parser.add_argument("--scf", type=float)
+    parser.add_argument("--gamma", type=float)
+    parser.add_argument("--_lambda", type=float)
     parser.add_argument("--alpha", type=float)
-    parser.add_argument("--lamda", default=0.001, type=float)
+    parser.add_argument("--beta", default=0.001, type=float)
     parser.add_argument("--data_set", default=0, type=str)
     parser.add_argument("--sim_path", default=0, type=str)
     parser.add_argument("--data_path", default=0, type=str)
