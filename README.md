@@ -10,4 +10,4 @@ $ pip install git+https://github.com/openai/CLIP.git
 ````
 # Data
 FLICKR-25K.mat
-  ## link: https://pan.baidu.com/s/1X5BTyux524aUyqHpFGPPlA password: eico
+   link: https://pan.baidu.com/s/1X5BTyux524aUyqHpFGPPlA password: eico
