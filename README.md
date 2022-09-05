@@ -1,5 +1,5 @@
 # UHSCM
-PyTorch implementation for UHSCM.
+PyTorch implementation for Unsupervised Hashing with Semantic Concept Mining.
 
 # Environments
 First, install PyTorch 1.7.1 (or later) and torchvision, as well as small additional dependencies. 
