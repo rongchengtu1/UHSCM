@@ -10,25 +10,23 @@ import torchvision.transforms as transforms
 import torch.nn.functional as F
 import scipy.io as scio
 import h5py
-from optimization import BertAdam
 from torch.cuda.amp import autocast as autocast, GradScaler
 from clip.tokenization_clip import SimpleTokenizer as ClipTokenizer
 from datetime import datetime
 from module_clv import CLIP_f as feature_extractor
 from torch.utils.data import DataLoader
 import dataset_my as dp
-import calc_hr
 import cv2
 
 
 def Generatefeature(model, data_loader, num_data, bit):
-    B = torch.zeros([num_data, bit], dtype=np.float32)
+    B = torch.zeros((num_data, bit))
     for iter, data in enumerate(data_loader, 0):
         data_input, label, _, data_ind = data
         data_input = data_input.cuda()
         with autocast():
             output = model(data_input)
-        B[data_ind.numpy(), :] = output.cpu().data
+        B[data_ind.numpy(), :] = output.cpu().data.float()
     return B
 
 def main(opt):
@@ -42,7 +40,6 @@ def main(opt):
 
     ### data processing
     if 'nus' in opt.data_set:
-        print(data_set)
         all_dta = h5py.File(opt.data_path, 'r')
         dset_train = dp.DatasetPorcessing_nus_h5(
             np.asarray(all_dta['train_data']), np.asarray(all_dta['train_L']), transformations)
@@ -82,7 +79,7 @@ def main(opt):
     for i in range(len(concept_prompt)):
         text = concept_prompt[i]
         words = tokenizer.tokenize(text)
-        words = [self.SPECIAL_TOKEN["CLS_TOKEN"]] + words
+        words = [SPECIAL_TOKEN["CLS_TOKEN"]] + words
         total_length_with_CLS = max_words - 1
         if len(words) > total_length_with_CLS:
             words = words[:total_length_with_CLS]
@@ -95,7 +92,7 @@ def main(opt):
 
     text_inputs = torch.tensor(text_inputs).cuda()
     with torch.no_grad():
-        text_features = model.encode_text(text_inputs).cpu()
+        text_features = model.clip_source.encode_text(text_inputs).cpu()
 
     ### concept denoising
     temp = text_features.shape[0] * opt.tua
@@ -131,7 +128,9 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=6195)  # 6195
     parser.add_argument('--tua', type=float, default=3)  # 6195
+    parser.add_argument('--batch_size', type=int, default=10)  # 6195
     parser.add_argument("--data_set", type=str)
+    parser.add_argument("--concept_path", type=str)
     parser.add_argument("--data_path", type=str)
     parser.add_argument("--sim_path", type=str)
     opt = parser.parse_args()
